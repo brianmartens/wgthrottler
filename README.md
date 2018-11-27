@@ -1,5 +1,5 @@
 # wgthrottler
-If you have a long series of processes that you want to be run on separate goroutines but want to limit the amount of goroutines running at any given time, then this may be what you are looking for. It is as simple as using a sync.WaitGroup but allows you to limit how many goroutines can actually run concurrently.
+If you have a long series of processes that you want to run on separate goroutines but need to limit the amount of goroutines running at any given time, then this package may have what you are looking for. It is as simple as using a sync.WaitGroup but allows you to limit how many goroutines can actually run concurrently.
 
 ## Usage
 
