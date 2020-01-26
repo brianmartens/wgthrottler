@@ -18,6 +18,15 @@ type WgThrottler struct {
 	mu  sync.Mutex
 }
 
+// Throttler is an interface which expects three methods: Done(), Wait(), and Next().
+// Done() and Wait() should function equivalently to a sync.WaitGroup, whereas Next() blocks until a new goroutine
+// may be allocated according to an arbitrary ruleset defined by the implementation.
+type Throttler interface{
+	Done()
+	Wait()
+	Next()
+}
+
 // Done is functionally equivalent to a sync.WaitGroup's Done() method.
 // A value of -1 will be sent through ch and the underlying sync.WaitGroup
 func (wg *WgThrottler) Done() {
