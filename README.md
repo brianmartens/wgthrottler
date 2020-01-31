@@ -1,5 +1,5 @@
 # wgthrottler
-A simple, easy to use waitgroup that limits concurrency across any number of running goroutines without the risk of deadlock
+A simple, easy-to-use waitgroup that limits concurrency across any number of running goroutines without the risk of deadlock
 
 
 ## Usage
