@@ -1,5 +1,6 @@
 # wgthrottler
-If you have a long series of processes that you want to run on separate goroutines but need to limit the amount of goroutines running at any given time, then this package may have what you are looking for. It is as simple as using a sync.WaitGroup but allows you to limit how many goroutines can actually run concurrently.
+A simple, easy to use waitgroup that limits concurrency across any number of running goroutines without the risk of deadlock
+
 
 ## Usage
 
@@ -8,28 +9,36 @@ package main
 
 import(
     "fmt"
+    "time"
     
     "github.com/brianmartens/wgthrottler"
 )
 
-func MyFunc(j int) {
-    fmt.Println(j)
-}
 
 func main() {
-    // create a new throttler with a maximum capacity of 5
-    th := wgthrottler.NewThrottler(5)
-
-    for i:=0; i<25; i++ {
-        // instead of using WaitGroup.Add(1), simply call th.Next()
-        th.Next()
-        go func(j int) {
-            defer th.Done()
-            MyFunc(j)
-        }(i)
-    }
-
-    // Just like sync package's WaitGroup.Wait()
-    th.Wait()
+    // To begin, declare a new throttler with a fixed level of concurrency.
+	th := wgthrottler.NewThrottler(5)
+    // Create some user sessions. We can create up to 5 in this case, but let's go with 3.
+	user1, user2, user3 := th.Use(), th.Use(), th.Use()
+	// Run countdowns for each user concurrently
+	go userCountdown(user1, th)
+	go userCountdown(user2, th)
+	go userCountdown(user3, th)
+    // Wait until done...
+	th.Wait()
+	fmt.Println("Done!")
 }
+
+// Uses the throttler along with the given user context to safely countdown concurrently with other active users
+func userCountdown(user context.Context, th *wgthrottler.WgThrottler) {
+	for i := 0; i < 10; i++ {
+		th.Next(user)
+		go func(j int) {
+			defer th.Done(user)
+			time.Sleep(200 * time.Millisecond)
+			fmt.Println("user:", user.Value("user"), j)
+		}(i)
+	}
+}
+
 ```

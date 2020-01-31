@@ -1,26 +1,29 @@
-package wgthrottler_test
+package wgthrottler
 
 import (
-	"fmt"
+	"context"
 	"testing"
-
-	"github.com/brianmartens/wgthrottler"
+	"time"
 )
 
-func TestMain(M *testing.M) {
-	fmt.Println("Launching wgthrottler test")
-	M.Run()
+func TestThrottle(t *testing.T) {
+	th := NewThrottler(5)
+	user1, user2, user3 := th.Use(), th.Use(), th.Use()
+	go userCountdown(user1, th, t)
+	go userCountdown(user2, th, t)
+	go userCountdown(user3, th, t)
+
+	th.Wait()
+	t.Log("Done!")
 }
 
-func TestThrottle(t *testing.T) {
-	th := wgthrottler.NewThrottler(3)
+func userCountdown(user context.Context, th *WgThrottler, t *testing.T) {
 	for i := 0; i < 10; i++ {
-		th.Next()
+		th.Next(user)
 		go func(j int) {
-			defer th.Done()
-			t.Log(j)
+			defer th.Done(user)
+			time.Sleep(200 * time.Millisecond)
+			t.Log("user:", user.Value("user"), j)
 		}(i)
 	}
-	th.Wait()
-	t.Log("Test successful")
 }
